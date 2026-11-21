@@ -8,7 +8,7 @@ const STYLES = {
   blood: { color: '#a64d50', gravity: 45, radius: 2.3, growth: -0.2 },
   tire: { color: '#b4c2bd', gravity: -7, radius: 5, growth: 13 },
   splash: { color: '#d9f2e8', gravity: 9, radius: 3, growth: 5 },
-  wake: { color: '#ecffef', gravity: 0, radius: 3, growth: 12 },
+  wake: { color: '#ecffef', gravity: 0, radius: 1.5, growth: 3 },
   fireball: { color: '#ffbf61', gravity: -24, radius: 23, growth: 15 },
   debris: { color: '#546775', gravity: 80, radius: 3, growth: 0 },
   muzzle: { color: '#fff1ae', gravity: 0, radius: 7, growth: 0 },

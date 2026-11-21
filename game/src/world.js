@@ -11,8 +11,8 @@ import { createPoliceState, addWantedHeat, updatePolice } from './police.js';
 import { createHelicopter, updateHelicopter } from './helicopter.js';
 import { createParticles } from './particles.js';
 import { createArsenal, seedPickups, createPickup, fireBullet, updateCombat } from './combat.js';
-import { createStory, updateMissions, failMission } from './missions.js';
-import { createEconomy, updateEconomy, readSave, writeSave } from './economy.js';
+import { createStory, updateMissions, failMission, updateRooftopMeeting } from './missions.js';
+import { createEconomy, updateEconomy, readSave, writeSave, storeVehicle } from './economy.js';
 import { createJobs, updateSideJobs, cancelJob } from './jobs.js';
 import { createMenuState, updateMenus } from './menus.js';
 import { updateDialog } from './dialogs.js';
@@ -20,6 +20,14 @@ import { createCamera, updateCamera } from './camera.js';
 import { createMinimap } from './minimap.js';
 import { createAudio, RADIO_STATIONS } from './audio.js';
 import { clamp, safeEntity, distance } from './math.js';
+import { createStreetFurniture } from './streetscape.js';
+import { createServices, updateServices } from './services.js';
+import { createGarageMenu, updateGarage } from './garage.js';
+import { createDiscoveries, updateDiscoveries } from './discoveries.js';
+import { createNavigation, updateNavigation } from './navigation.js';
+import { createAmbientState, initializeAmbientBoats, updateAmbient } from './ambient.js';
+import { createStunts, updateStunts } from './stunts.js';
+import { createMarine, updateMarine } from './marine.js';
 
 export function createWorld(input, seed = 260621) {
   const random = createRandom(seed);
@@ -69,6 +77,7 @@ export function createWorld(input, seed = 260621) {
     radio: 1,
     screen: 'title',
     dialog: null,
+    rooftop: null,
     heat: 0,
     frames: 0,
     steps: 0,
@@ -78,6 +87,14 @@ export function createWorld(input, seed = 260621) {
     shotObjective: null,
     light: { night: 0, golden: 0, shadowX: -0.3, shadowY: 0.6, shadowAlpha: 0.2 },
     minimap: null,
+    furniture: [],
+    services: createServices(),
+    garageMenu: createGarageMenu(),
+    discoveries: createDiscoveries(),
+    navigation: createNavigation(),
+    ambient: createAmbientState(),
+    stunts: createStunts(),
+    marine: createMarine(),
     hasSave: false,
     stats: {
       distance: 0,
@@ -101,15 +118,19 @@ export function createWorld(input, seed = 260621) {
   };
   game.hurt = amount => hurtPlayer(game, amount);
   game.save = () => writeSave(game);
+  game.storeCurrentVehicle = () => storeVehicle(game);
+  game.boatWake = (boat, dt) => updateBoatWake(game, boat, dt);
   game.respawn = reason => beginRespawn(game, reason);
   game.finishRespawn = () => finishRespawn(game);
   spawnTraffic(game);
   spawnPedestrians(game);
   spawnBoats(game);
+  initializeAmbientBoats(game);
   seedPickups(game);
   game.vehicles.push(createVehicle('sunburst', 650, 2275, Math.PI / 2));
   game.vehicles.push(createVehicle('vespera', 600, 2225, 0));
   game.minimap = createMinimap(game.city);
+  game.furniture = createStreetFurniture(game.city);
   game.camera.x = game.player.x;
   game.camera.y = game.player.y;
   return game;
@@ -129,6 +150,14 @@ export function loadProgress(game) {
 
 export function stepWorld(game, dt = STEP) {
   game.steps++;
+  if (game.screen === 'play' && !game.dialog && !game.menu.death) {
+    const wasGarageOpen = game.garageMenu.open;
+    updateGarage(game, dt);
+    if (wasGarageOpen || game.garageMenu.open) {
+      game.input.clear();
+      return;
+    }
+  }
   updateMenus(game, dt);
   if (game.screen === 'title') {
     updateClock(game.clock, dt, true);
@@ -142,6 +171,7 @@ export function stepWorld(game, dt = STEP) {
   updateClock(game.clock, dt, !!game.shot);
   updateWeather(game, dt);
   updateDialog(game, dt);
+  updateRooftopMeeting(game, dt);
   game.player.hurtFlash = Math.max(0, game.player.hurtFlash - dt * 1.5);
   if (!game.dialog) updatePlayer(game, dt);
   updateTraffic(game, dt);
@@ -153,6 +183,12 @@ export function stepWorld(game, dt = STEP) {
   updateMissions(game, dt);
   updateSideJobs(game, dt);
   updateEconomy(game, dt);
+  updateServices(game, dt);
+  updateDiscoveries(game, dt);
+  updateNavigation(game, dt);
+  updateAmbient(game, dt);
+  updateStunts(game, dt);
+  updateMarine(game, dt);
   game.fx.update(dt);
   updateCamera(game, dt);
   updateTransientState(game, dt);
@@ -163,6 +199,7 @@ export function stepWorld(game, dt = STEP) {
 function updatePlayer(game, dt) {
   const p = game.player;
   const input = game.input;
+  if (game.rooftop) return;
   if (input.tap('KeyE')) enterOrExitVehicle(game);
   const horizontal = input.axis('KeyA', 'KeyD') || input.axis('ArrowLeft', 'ArrowRight');
   const vertical = input.axis('KeyW', 'KeyS') || input.axis('ArrowUp', 'ArrowDown');
@@ -278,6 +315,8 @@ function finishRespawn(game) {
   p.health = 100;
   p.armor = 0;
   p.hurtFlash = 0;
+  p.rooftopHeight = 0;
+  game.rooftop = null;
   game.heat = 0;
   game.police.arrest = 0;
   game.police.unseen = 0;

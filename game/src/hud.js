@@ -164,6 +164,9 @@ function drawPrompts(ctx, game) {
   if (e.nearest) {
     const p = e.nearest;
     text = e.owned.includes(p.id) ? `[B]  ${p.name}  /  REST & SAVE` : `[B]  BUY ${p.name}  •  $${p.price.toLocaleString()}  •  +$${p.income}/HR`;
+  } else if (game.services.nearest) {
+    const service = game.services.nearest;
+    text = `[L]  ${service.name}  •  $${service.price}  /  ${service.detail.toUpperCase()}`;
   } else if (game.jobs.nearest && !game.jobs.active) text = `[J]  START ${game.jobs.nearest.name}`;
   else if (!game.player.vehicle) {
     const vehicle = game.vehicles.find(v => !v.exploded && distance(v, game.player) < 60);

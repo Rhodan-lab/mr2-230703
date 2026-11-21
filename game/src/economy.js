@@ -94,10 +94,16 @@ export function updateEconomy(game, dt) {
   if (game.input.tap('KeyG')) {
     const bank = BANKS.find(b => distance(b, game.player) < 95);
     if (bank) {
-      const amount = Math.floor(e.cash);
-      e.bank += amount;
-      e.cash = 0;
-      game.notify(bank.name, `$${amount.toLocaleString()} deposited. Safe from arrest fees.`);
+      const withdrawing = game.input.down('ShiftLeft') || game.input.down('ShiftRight');
+      const amount = Math.floor(withdrawing ? e.bank : e.cash);
+      if (withdrawing) {
+        e.cash += amount;
+        e.bank -= amount;
+      } else {
+        e.bank += amount;
+        e.cash -= amount;
+      }
+      game.notify(bank.name, `$${amount.toLocaleString()} ${withdrawing ? 'withdrawn. Spend it wisely.' : 'deposited. Safe from arrest fees.'}`);
       game.audio?.play('pickup');
       game.save();
     } else game.notify('FIND A COSTA TRUST ATM', 'Banks are marked with a blue $ on the map.');
@@ -118,6 +124,12 @@ export function writeSave(game) {
     station: game.radio,
     hour: game.clock.hour,
     jobs: game.jobs.completed,
+    discoveries: {
+      districts: game.discoveries.districts,
+      landmarks: game.discoveries.landmarks,
+      packages: game.discoveries.packages.filter(item => item.found).map(item => item.id),
+      achievements: game.discoveries.achievementKeys,
+    },
   };
   try {
     globalThis.localStorage?.setItem(SAVE_KEY, JSON.stringify(data));
@@ -149,6 +161,14 @@ export function readSave(game) {
     game.clock.hour = Math.max(0, Math.min(23.99, Number(data.hour) || 16));
     game.economy.incomeHour = Math.floor(game.clock.hour);
     game.jobs.completed = Number(data.jobs) || 0;
+    if (data.discoveries) {
+      const found = data.discoveries;
+      game.discoveries.districts = Array.isArray(found.districts) ? found.districts.slice(0, 7) : [];
+      game.discoveries.landmarks = Array.isArray(found.landmarks) ? found.landmarks.slice(0, 7) : [];
+      game.discoveries.achievementKeys = Array.isArray(found.achievements) ? found.achievements.slice(0, 20) : [];
+      for (const item of game.discoveries.packages) item.found = Array.isArray(found.packages) && found.packages.includes(item.id);
+      game.discoveries.packageCount = game.discoveries.packages.filter(item => item.found).length;
+    }
     return true;
   } catch {
     return false;

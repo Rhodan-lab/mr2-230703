@@ -1,6 +1,6 @@
-// MARBELLA RUN 2. Initial build pass: validate, copy, seal with official dossier API.
+// MARBELLA RUN 2. Revised build pass: explicit preflight, assembly and output verification.
 import { cpSync, lstatSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-game.ts';
 
@@ -47,6 +47,7 @@ function auditGame(directory: string) {
 
 function imageDimensions(data: Buffer): [number, number] {
   demand(data[0] === 255 && data[1] === 216, 'Expected JPEG');
+  demand(data[data.length - 2] === 255 && data[data.length - 1] === 217, 'JPEG is incomplete');
   let offset = 2;
   while (offset + 9 < data.length) {
     if (data[offset++] !== 255) continue;
@@ -77,19 +78,42 @@ function auditScreenshots(directory: string) {
   });
 }
 
-const tree = auditGame(join(root, 'game'));
-const images = auditScreenshots(join(root, 'screenshots'));
-log('preflight', { tree, images });
-mkdirSync(output, { recursive: true });
-cpSync(join(root, 'game'), join(output, 'game'), { recursive: true });
-cpSync(join(root, 'screenshots'), join(output, 'screenshots'), { recursive: true });
-const dossier = buildDossier(output, {
-  text_max_bytes: 163840,
-  screenshots: { max: 4, max_bytes: 204800 },
-  game_max_files: limits.files,
-  game_max_bytes: limits.gameBytes,
-  game_path_max_bytes: 1000,
-});
-demand(Buffer.byteLength(dossier) <= limits.dossierBytes, 'Dossier over cap');
-writeFileSync(join(output, 'dossier.json'), dossier);
-log('complete', { dossierBytes: Buffer.byteLength(dossier), entries: tree.count });
+function validateBuildInputs() {
+  const destination = resolve(output);
+  const sourceGame = resolve(root, 'game');
+  const sourceShots = resolve(root, 'screenshots');
+  demand(destination !== resolve(root), 'Output cannot overwrite the repository root');
+  demand(destination !== sourceGame && !destination.startsWith(sourceGame + sep), 'Output cannot be inside game');
+  demand(destination !== sourceShots && !destination.startsWith(sourceShots + sep), 'Output cannot be inside screenshots');
+  const gameTree = auditGame(sourceGame);
+  const screenshotManifest = auditScreenshots(sourceShots);
+  log('preflight', { gameTree, screenshotManifest });
+  return { destination, sourceGame, sourceShots, gameTree, screenshotManifest };
+}
+
+function assembleEntry() {
+  const input = validateBuildInputs();
+  mkdirSync(input.destination, { recursive: true });
+  cpSync(input.sourceGame, join(input.destination, 'game'), { recursive: true });
+  cpSync(input.sourceShots, join(input.destination, 'screenshots'), { recursive: true });
+  const copiedTree = auditGame(join(input.destination, 'game'));
+  const copiedImages = auditScreenshots(join(input.destination, 'screenshots'));
+  demand(copiedTree.bytes === input.gameTree.bytes, 'Copied game byte count differs');
+  demand(copiedTree.count === input.gameTree.count, 'Copied game entry count differs');
+  demand(JSON.stringify(copiedImages) === JSON.stringify(input.screenshotManifest), 'Copied image audit differs');
+  log('assembled', { gameBytes: copiedTree.bytes, images: copiedImages.length });
+  const dossierBytes = buildDossier(input.destination, {
+    text_max_bytes: 163840,
+    screenshots: { max: 4, max_bytes: limits.screenshotBytes },
+    game_max_files: limits.files,
+    game_max_bytes: limits.gameBytes,
+    game_path_max_bytes: 1000,
+  });
+  const byteCount = Buffer.byteLength(dossierBytes);
+  demand(byteCount <= limits.dossierBytes, 'Dossier over cap');
+  writeFileSync(join(input.destination, 'dossier.json'), dossierBytes);
+  demand(readFileSync(join(input.destination, 'dossier.json')).equals(Buffer.from(dossierBytes)), 'Dossier verification differs');
+  log('complete', { dossierBytes: byteCount, entries: copiedTree.count, deterministic: true });
+}
+
+assembleEntry();

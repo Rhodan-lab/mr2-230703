@@ -84,8 +84,8 @@ export function updateTraffic(game, dt) {
 }
 
 export function drawTrafficLights(ctx, game, bounds) {
-  for (let x = Math.max(0, Math.floor(bounds.left / BLOCK) * BLOCK); x < bounds.right; x += BLOCK) {
-    for (let y = Math.max(0, Math.floor(bounds.top / BLOCK) * BLOCK); y < bounds.bottom; y += BLOCK) {
+  for (let x = Math.max(0, Math.floor(bounds.left / BLOCK) * BLOCK); x <= Math.min(COLS * BLOCK, bounds.right); x += BLOCK) {
+    for (let y = Math.max(0, Math.floor(bounds.top / BLOCK) * BLOCK); y <= Math.min(ROWS * BLOCK, bounds.bottom); y += BLOCK) {
       const phase = trafficLight(x, y, game.clock.elapsed);
       ctx.fillStyle = '#172c35';
       ctx.fillRect(x + 41, y - 47, 6, 17);

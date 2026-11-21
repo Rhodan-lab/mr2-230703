@@ -11,6 +11,8 @@ export const DISTRICTS = [
 ];
 
 export function districtAt(x, y) {
+  if (x >= 3200 && y >= 2850) return DISTRICTS[3];
+  if (x >= 3200) return DISTRICTS[1];
   const bx = Math.floor(x / BLOCK);
   const by = Math.floor(y / BLOCK);
   for (const d of DISTRICTS.slice(1)) {

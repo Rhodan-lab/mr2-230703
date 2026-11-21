@@ -143,7 +143,14 @@ export function updatePolice(game, dt) {
     }
     if (d < 55 && Math.abs(target.vehicle?.speed || 0) < 12) nearArrest = true;
   }
-  if (game.helicopter.active && distance(game.helicopter, target) < 520 && !game.city.collision(target.x, target.y, 4)) p.seen = true;
+  const helicopter = game.helicopter;
+  const airVisibility = game.weather.type === 'RAIN' ? 86 : game.light.night > 0.4 ? 105 : 145;
+  const insideSearchlight = Math.hypot(helicopter.searchX - target.x, helicopter.searchY - target.y) < airVisibility;
+  if (helicopter.active && insideSearchlight && game.city.lineOfSight(helicopter, target)) {
+    p.seen = true;
+    p.lastKnown.x = target.x;
+    p.lastKnown.y = target.y;
+  }
   if (stars > 0) {
     p.unseen = p.seen ? 0 : p.unseen + dt;
     if (p.unseen > 9 && !game.shot) {

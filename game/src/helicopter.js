@@ -29,11 +29,13 @@ export function updateHelicopter(game, dt) {
     h.x = game.player.x - 200;
     h.y = game.player.y - 190;
     h.deploy = 9;
+    game.police.lastKnown = { x: game.player.x, y: game.player.y };
   }
   const t = game.clock.elapsed;
-  const px = game.player.x;
-  const py = game.player.y;
-  const targetX = px - 165 + Math.cos(t * 0.17) * 55;
+  const tracking = game.police.seen || game.shot;
+  const px = tracking ? game.player.x : game.police.lastKnown.x;
+  const py = tracking ? game.player.y : game.police.lastKnown.y;
+  const targetX = px + 5 + Math.cos(t * 0.17) * 35;
   const targetY = py - 90 + Math.sin(t * 0.21) * 45;
   const follow = 1 - Math.exp(-dt * 1.5);
   h.x = lerp(h.x, targetX, follow);

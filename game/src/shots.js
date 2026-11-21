@@ -46,7 +46,9 @@ function ambientCar(game, type, x, y, angle, speed = 60, color) {
 
 function crowd(game, x, y, count, width, height) {
   for (let i = 0; i < count; i++) {
-    game.peds.push(game.makePed(x + game.random() * width, y + game.random() * height));
+    const px = x + game.random() * width;
+    const py = y + game.random() * height;
+    if (!game.city.collision(px, py, 8)) game.peds.push(game.makePed(px, py));
   }
 }
 
@@ -78,7 +80,9 @@ function stageChase(game) {
   game.weather.type = 'RAIN';
   game.weather.wet = 1;
   game.weather.thunder = 100;
-  game.shotZoom = 1.08;
+  game.shotZoom = 1.2;
+  game.camera.rotation = -0.15;
+  game.vehicles = game.vehicles.filter(v => Math.hypot(v.x - 1740, v.y - 1400) > 600);
   const v = seatPlayer(game, 'vectora', 1695, 1420, Math.PI / 2 + 0.03, '#efb956');
   v.vx = 247;
   v.speed = 247;
@@ -89,21 +93,21 @@ function stageChase(game) {
     [1550, 1418, 1.57],
     [1470, 1385, 1.67],
     [1335, 1419, 1.57],
-    [1930, 1390, -1.7],
+    [2210, 1380, -1.57],
     [1685, 1235, 3.0],
     [1968, 1530, 0.1],
   ]) spawnCruiser(game, x, y, angle);
-  ambientCar(game, 'taxi', 1880, 1378, -Math.PI / 2, 72);
-  ambientCar(game, 'parcelvan', 2070, 1420, Math.PI / 2, 68);
+  ambientCar(game, 'taxi', 2010, 1378, -Math.PI / 2, 72);
+  ambientCar(game, 'parcelvan', 2250, 1420, Math.PI / 2, 68);
   game.helicopter.active = true;
-  game.helicopter.x = 1550;
+  game.helicopter.x = 1750;
   game.helicopter.y = 1315;
   game.helicopter.searchX = 1725;
   game.helicopter.searchY = 1420;
   game.helicopter.rope = 3.6;
   game.helicopter.deploy = 1.6;
   game.helicopter.altitude = 112;
-  game.shotMarker = { x: 2010, y: 1420 };
+  game.shotMarker = { x: 2250, y: 1420 };
   game.shotObjective = { act: 'ACT III', title: 'EYES IN THE RAIN', text: 'Survive Air One. Reach the harbor escape route.', timer: 47 };
   game.shotTick = dt => {
     // Staging protects the stunt vehicle; pursuit and driving remain fully live.
@@ -124,7 +128,8 @@ function stageChase(game) {
 function stageGolden(game) {
   game.clock.hour = 17.55;
   game.weather.type = 'GOLDEN';
-  game.shotZoom = 0.96;
+  game.shotZoom = 1.1;
+  game.camera.rotation = -0.11;
   game.radio = 1;
   const v = seatPlayer(game, 'sunburst', 3380, 1600, 0, '#de7864');
   v.vy = -120;
@@ -140,7 +145,8 @@ function stageGolden(game) {
 function stageCity(game) {
   game.clock.hour = 12.4;
   game.weather.type = 'CLEAR';
-  game.shotZoom = 0.98;
+  game.shotZoom = 1.12;
+  game.camera.rotation = -0.13;
   game.player.x = 1714;
   game.player.y = 1198;
   game.player.weapon = 0;
@@ -156,7 +162,7 @@ function stageCity(game) {
     ambientCar(game, ['tico', 'sunburst', 'parcelvan', 'taxi'][i % 4], 1450 + i * 95, 1140, Math.PI / 2, 45 + i * 2);
     ambientCar(game, ['haulmax', 'vectora', 'vespera'][i % 3], 1510 + i * 90, 1100, -Math.PI / 2, 54);
   }
-  crowd(game, 1710, 1190, 22, 18, 150);
+  crowd(game, 1728, 1190, 14, 10, 150);
   crowd(game, 1480, 1168, 18, 150, 13);
   crowd(game, 1780, 1058, 16, 130, 14);
   game.shotObjective = { act: 'SIDE HUSTLE', title: 'COAST CAB • YOUR NEXT FARE', text: 'Enter the Coast Cab. Five fares. Keep the tips.', timer: 254 };
@@ -166,7 +172,9 @@ function stageCity(game) {
 function stageBoat(game) {
   game.clock.hour = 15.6;
   game.weather.type = 'CLEAR';
-  game.shotZoom = 0.96;
+  game.shotZoom = 1.08;
+  game.camera.rotation = -0.12;
+  game.shotFraming = { x: -225, y: 0 };
   const v = seatPlayer(game, 'marlin', COAST + 230, 3180, Math.PI / 2 - 0.24);
   v.vx = 180;
   v.vy = -40;

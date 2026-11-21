@@ -15,6 +15,14 @@ import { drawHUD } from './hud.js';
 import { drawTitle, drawPause, drawHelp, drawDeath } from './menus.js';
 import { drawDialog } from './dialogs.js';
 import { drawAtlas } from './atlas.js';
+import { drawFurniture, drawRoadTexture, drawStoreCanopy, drawNeonAccents } from './streetscape.js';
+import { drawArchitecturalDetail } from './architecture.js';
+import { drawServices } from './services.js';
+import { drawGarage } from './garage.js';
+import { drawDiscoveries, drawDistrictBanner } from './discoveries.js';
+import { drawAmbientOpportunity, drawNewsTicker } from './ambient.js';
+import { drawStuntRamps, drawStuntResult } from './stunts.js';
+import { drawMarine } from './marine.js';
 
 export function createRenderer(canvas) {
   const ctx = canvas.getContext('2d', { alpha: false });
@@ -35,18 +43,26 @@ export function createRenderer(canvas) {
     game.light = timePalette(game.clock);
     ctx.save();
     ctx.translate(640 + camera.shakeX, 360 + camera.shakeY);
+    ctx.rotate(camera.rotation);
     ctx.scale(camera.zoom, camera.zoom);
     ctx.translate(-camera.x, -camera.y);
     drawGround(ctx, game, bounds);
+    drawRoadTexture(ctx, game, bounds);
     drawPuddles(ctx, game, bounds);
     drawSkids(ctx, game);
     game.fx.draw(ctx, 'water');
+    drawMarine(ctx, game, bounds);
+    drawStuntRamps(ctx, game);
     for (const building of game.city.buildings) {
       if (visible(building, bounds, 230)) drawBuildingShadow(ctx, building, game.light);
     }
     drawTrafficLights(ctx, game, bounds);
     drawPickups(ctx, game);
+    drawDiscoveries(ctx, game);
     const objects = [];
+    for (const furniture of game.furniture) {
+      if (visible(furniture, bounds, 60)) objects.push({ y: furniture.y + 4, type: 'furniture', object: furniture });
+    }
     for (const building of game.city.buildings) {
       if (visible(building, bounds, 220)) objects.push({ y: building.y + building.h, type: 'building', object: building });
     }
@@ -59,16 +75,28 @@ export function createRenderer(canvas) {
     for (const ped of game.peds) {
       if (visible(ped, bounds, 60)) objects.push({ y: ped.y + 7, type: 'ped', object: ped });
     }
-    if (!game.player.vehicle) objects.push({ y: game.player.y + 8, type: 'player', object: game.player });
+    if (!game.player.vehicle) {
+      const playerDepth = game.rooftop ? game.rooftop.building.y + game.rooftop.building.h + 3 : game.player.y + 8;
+      objects.push({ y: playerDepth, type: 'player', object: game.player });
+      if (game.rooftop) objects.push({ y: playerDepth + 1, type: 'ped', object: game.rooftop.host });
+    }
     objects.sort((a, b) => a.y - b.y);
     for (const item of objects) {
-      if (item.type === 'building') drawBuilding(ctx, item.object, game);
+      if (item.type === 'building') {
+        drawBuilding(ctx, item.object, game);
+        drawArchitecturalDetail(ctx, item.object, game);
+        drawStoreCanopy(ctx, item.object, game);
+        drawNeonAccents(ctx, item.object, game);
+      }
+      if (item.type === 'furniture') drawFurniture(ctx, item.object, game);
       if (item.type === 'tree') drawTree(ctx, item.object, game);
       if (item.type === 'vehicle') drawVehicle(ctx, item.object, game);
       if (item.type === 'boat') drawBoat(ctx, item.object, game);
       if (item.type === 'ped' || item.type === 'player') drawPedestrian(ctx, item.object, game, item.type === 'player');
     }
     drawProperties(ctx, game);
+    drawServices(ctx, game);
+    drawAmbientOpportunity(ctx, game);
     drawSideJobs(ctx, game);
     drawMissionMarker(ctx, game);
     drawStreetLights(ctx, game, bounds);
@@ -89,14 +117,21 @@ export function createRenderer(canvas) {
     ctx.fillStyle = '#061322';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.setTransform(view.scale, 0, 0, view.scale, view.x, view.y);
-    if (game.screen === 'title') drawTitle(ctx, game);
+    if (game.screen === 'title') {
+      drawTitle(ctx, game);
+      if (game.menu.help) drawHelp(ctx);
+    }
     else {
       drawWorld(game);
       drawHUD(ctx, game);
+      drawDistrictBanner(ctx, game);
+      drawNewsTicker(ctx, game);
+      drawStuntResult(ctx, game);
       drawDialog(ctx, game);
       if (game.screen === 'paused') drawPause(ctx, game);
       if (game.menu.atlas) drawAtlas(ctx, game);
       if (game.menu.help) drawHelp(ctx);
+      drawGarage(ctx, game);
       drawDeath(ctx, game);
     }
     game.frames++;

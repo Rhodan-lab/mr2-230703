@@ -2,6 +2,7 @@ import { BLOCK, CITY_W, CITY_H, COAST } from './config.js';
 import { PROPERTIES, BANKS } from './economy.js';
 import { objectivePosition } from './missions.js';
 import { label, roundRect } from './math.js';
+import { drawNavigationRoute } from './navigation.js';
 
 export function createMinimap(city) {
   if (typeof document === 'undefined') return null;
@@ -85,14 +86,16 @@ export function drawMinimap(ctx, game) {
   const marker = game.shotMarker || objectivePosition(game);
   if (marker) {
     dot(marker, '#f8d384', 5);
-    // GPS route follows the same orthogonal street language as the city.
-    ctx.strokeStyle = '#e5c478a6';
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.moveTo(mx, my);
-    ctx.lineTo(mx + (marker.x - px) * scale, my);
-    ctx.lineTo(mx + (marker.x - px) * scale, my + (marker.y - py) * scale);
-    ctx.stroke();
+    if (game.navigation.offRoad) {
+      ctx.strokeStyle = '#e5c478a6';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([3, 4]);
+      ctx.beginPath();
+      ctx.moveTo(mx, my);
+      ctx.lineTo(mx + (marker.x - px) * scale, my + (marker.y - py) * scale);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    } else drawNavigationRoute(ctx, game, mx, my, scale);
   }
   if (game.helicopter.active) {
     const hx = mx + (game.helicopter.x - px) * scale;

@@ -125,7 +125,8 @@ export function hurtPedestrian(game, ped, amount, source) {
 export function drawPedestrian(ctx, ped, game, player = false) {
   const dead = ped.health <= 0;
   ctx.save();
-  ctx.translate(ped.x, ped.y);
+  const elevation = ped.rooftopHeight || 0;
+  ctx.translate(ped.x - elevation * 0.28, ped.y - elevation * 0.62);
   ctx.rotate(dead ? ped.angle + 1 : ped.angle + Math.PI / 2);
   ctx.fillStyle = 'rgba(3,19,26,.25)';
   ctx.beginPath();

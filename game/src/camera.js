@@ -9,24 +9,33 @@ export function createCamera() {
     shake: 0,
     shakeX: 0,
     shakeY: 0,
+    rotation: -0.12,
     screenToWorld(x, y) {
+      const sx = (x - 640) / this.zoom;
+      const sy = (y - 360) / this.zoom;
+      const c = Math.cos(-this.rotation);
+      const s = Math.sin(-this.rotation);
       return {
-        x: (x - 640) / this.zoom + this.x,
-        y: (y - 360) / this.zoom + this.y,
+        x: sx * c - sy * s + this.x,
+        y: sx * s + sy * c + this.y,
       };
     },
     worldToScreen(x, y) {
+      const dx = x - this.x;
+      const dy = y - this.y;
+      const c = Math.cos(this.rotation);
+      const s = Math.sin(this.rotation);
       return {
-        x: (x - this.x) * this.zoom + 640,
-        y: (y - this.y) * this.zoom + 360,
+        x: (dx * c - dy * s) * this.zoom + 640,
+        y: (dx * s + dy * c) * this.zoom + 360,
       };
     },
     bounds() {
       return {
-        left: this.x - 650 / this.zoom,
-        top: this.y - 370 / this.zoom,
-        right: this.x + 650 / this.zoom,
-        bottom: this.y + 370 / this.zoom,
+        left: this.x - 740 / this.zoom,
+        top: this.y - 490 / this.zoom,
+        right: this.x + 740 / this.zoom,
+        bottom: this.y + 490 / this.zoom,
       };
     },
   };
@@ -39,8 +48,8 @@ export function updateCamera(game, dt) {
   const speed = Math.abs(v?.speed || 0);
   const leadX = (v?.vx || p.vx) * 0.44;
   const leadY = (v?.vy || p.vy) * 0.35;
-  const desiredX = p.x + leadX;
-  const desiredY = p.y + leadY - 18;
+  const desiredX = p.x + leadX + (game.shotFraming?.x || 0);
+  const desiredY = p.y + leadY - 18 + (game.shotFraming?.y || 0);
   const smoothing = 1 - Math.exp(-dt * 4);
   c.x = lerp(c.x, desiredX, smoothing);
   c.y = lerp(c.y, desiredY, smoothing);

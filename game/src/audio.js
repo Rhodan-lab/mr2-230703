@@ -236,5 +236,15 @@ export function createAudio() {
     return muted;
   }
 
-  return { initialize, play, update, setStation, setVolume, toggleMute };
+  function diagnostics() {
+    return {
+      initialized: !!context,
+      state: context?.state || 'waiting-for-input',
+      station: RADIO_STATIONS[station].name,
+      muted,
+      volume,
+    };
+  }
+
+  return { initialize, play, update, setStation, setVolume, toggleMute, diagnostics };
 }

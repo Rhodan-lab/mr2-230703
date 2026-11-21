@@ -25,8 +25,9 @@ export const CONTROL_GROUPS = [
     ['ENTER', 'Advance story dialog'],
     ['J', 'Begin a nearby side job'],
     ['B', 'Buy / visit nearby property'],
-    ['G', 'Deposit cash at a bank'],
+    ['G / SHIFT + G', 'Deposit / withdraw cash at a bank'],
     ['K', 'Save progress'],
+    ['L', 'Use hospital, repair, food or supply service'],
   ]],
   ['EXTRAS', [
     ['R', 'Cycle three radio stations'],
@@ -34,6 +35,7 @@ export const CONTROL_GROUPS = [
     ['H', 'Controls overlay'],
     ['ESC', 'Pause / resume'],
     ['V', 'Mute / unmute audio'],
+    ['U', 'Browse owned garage near Vela Customs'],
     ['N', 'Change weather in free roam'],
   ]],
 ];
@@ -55,6 +57,8 @@ export function updateMenus(game, dt) {
   const menu = game.menu;
   menu.age += dt;
   if (game.screen === 'title') {
+    if (input.tap('KeyH')) menu.help = !menu.help;
+    if (input.tap('Escape')) menu.help = false;
     if (input.tap('Enter') || input.tap('Space') || input.tap('Mouse')) {
       game.screen = 'play';
       game.audio.initialize();

@@ -1,5 +1,6 @@
 import { TAU, WORLD_W, WORLD_H } from './config.js';
 import { clamp, approach, distance, safeEntity, roundRect, polygon, glow, label } from './math.js';
+import { drawVehicleDetail } from './vehicle-detail.js';
 
 export const VEHICLE_TYPES = {
   sunburst: { name: 'Sunburst', class: 'SPORT COUPE', w: 23, h: 43, power: 195, max: 310, grip: 8.2, drag: 0.55, steer: 2.45, mass: 1, color: '#ef8a4b', seats: 2 },
@@ -72,7 +73,7 @@ export function driveVehicle(game, vehicle, throttle, steer, brake, dt) {
   forward *= Math.exp(-s.drag * dt * (throttle === 0 ? 1.9 : 0.42));
   forward = clamp(forward, -s.max * 0.32, s.max * terrain);
   if (brake) forward *= Math.exp(-dt * (s.bike ? 2.7 : 1.7));
-  const grip = s.grip * (brake ? 0.16 : 1) * (game.weather.wet > 0.5 ? 0.76 : 1);
+  const grip = s.grip * (brake ? 0.16 : 1) * (game.weather.wet > 0.5 ? 0.76 : 1) * (v.altitude > 2 ? 0.05 : 1);
   lateral *= Math.exp(-grip * dt);
   const steering = steer * s.steer * clamp(Math.abs(forward) / 85, 0, 1) * (forward < 0 ? -1 : 1);
   v.angle += steering * dt;
@@ -254,6 +255,8 @@ export function drawVehicle(ctx, v, game) {
   ctx.beginPath();
   ctx.ellipse(-3, 5, w * 0.66, h * 0.57, 0, 0, TAU);
   ctx.fill();
+  const altitude = v.altitude || 0;
+  ctx.translate(-Math.sin(v.angle) * altitude, -Math.cos(v.angle) * altitude);
   if (s.bike) {
     drawMotorbike(ctx, v, game);
     ctx.restore();
@@ -322,6 +325,7 @@ export function drawVehicle(ctx, v, game) {
     ctx.lineTo(-3, -h * 0.1);
     ctx.stroke();
   }
+  drawVehicleDetail(ctx, v, game);
   ctx.restore();
 }
 
@@ -369,9 +373,9 @@ export function drawVehicleLights(ctx, v, game) {
     ctx.globalCompositeOperation = 'screen';
     glow(ctx, flash ? -10 : 10, 0, 63, color + '65');
     if (game.weather.wet > 0.2) {
-      ctx.globalAlpha = 0.3;
+      ctx.globalAlpha = 0.17;
       ctx.fillStyle = color;
-      for (let i = 0; i < 8; i++) ctx.fillRect(-26 - i * 4, 18 + i * 7, 52 + i * 8, 2.5);
+      for (let i = 0; i < 5; i++) ctx.fillRect(-18 - i * 3, 18 + i * 8, 36 + i * 6, 2);
     }
   }
   ctx.restore();

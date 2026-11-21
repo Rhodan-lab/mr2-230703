@@ -321,7 +321,7 @@ export function updateMissions(game, dt) {
   let complete = false;
   if (o.type === 'goto') complete = distance(player, o) < 55;
   if (o.type === 'steal') complete = player.vehicle === s.target;
-  if (o.type === 'deliver') complete = !!player.vehicle && distance(player, o) < 65 && Math.abs(player.vehicle.speed) < 95;
+  if (o.type === 'deliver') complete = !!player.vehicle && (!s.target || player.vehicle === s.target) && distance(player, o) < 65 && Math.abs(player.vehicle.speed) < 95;
   if (o.type === 'wreck') complete = !!s.target?.exploded;
   if (o.type === 'convoy') complete = s.escorts.length === 2 && s.escorts.every(v => v.exploded);
   if (o.type === 'evade') complete = game.heat <= 0;
@@ -340,12 +340,61 @@ export function updateMissions(game, dt) {
   if (o.type === 'rooftop') {
     complete = distance(player, o) < 62 && game.input.tap('KeyE');
     if (complete) {
-      game.notify('ABOVE THE CITY', 'The meeting is over. The truth is in your hands.');
+      beginRooftopMeeting(game, o);
       game.addHeat(2);
       game.player.arsenal[3].reserve += 90;
     }
   }
   if (complete) advanceObjective(game);
+}
+
+function beginRooftopMeeting(game, access) {
+  const nearby = game.city.nearBuildings(access.x, access.y);
+  nearby.sort((a, b) => distance({ x: a.x + a.w / 2, y: a.y + a.h / 2 }, access) - distance({ x: b.x + b.w / 2, y: b.y + b.h / 2 }, access));
+  const building = nearby[0];
+  if (!building) return;
+  if (game.player.vehicle) {
+    game.player.vehicle.driver = false;
+    game.player.vehicle = null;
+  }
+  const speaker = game.story.active === 12 ? 'sterling' : 'marisol';
+  const host = game.makePed(building.x + building.w * 0.65, building.y + building.h * 0.45);
+  host.rooftopHeight = building.height;
+  host.shirt = speaker === 'sterling' ? '#355471' : '#a65d74';
+  host.angle = Math.PI;
+  game.rooftop = {
+    building,
+    host,
+    returnX: access.x,
+    returnY: access.y,
+    timer: 1.6,
+  };
+  game.player.x = building.x + building.w * 0.35;
+  game.player.y = building.y + building.h * 0.55;
+  game.player.rooftopHeight = building.height;
+  game.player.angle = 0;
+  game.player.vx = 0;
+  game.player.vy = 0;
+  const lines = speaker === 'sterling' ? [
+    'Look at it, Rico. Every light is a debt. I simply learned to collect.',
+    'Keep your skyline, Vane. I am taking the keys. Marbella can settle its own account.',
+  ] : [
+    'From up here you can almost pretend the city is clean. The ledger says otherwise.',
+    'Reyes moves the money. Vane signs the paper. Get me proof, and we give these streets back.',
+  ];
+  beginDialog(game, speaker, lines, 'ABOVE THE CITY');
+}
+
+export function updateRooftopMeeting(game, dt) {
+  const meeting = game.rooftop;
+  if (!meeting || game.dialog) return;
+  meeting.timer -= dt;
+  if (meeting.timer > 0) return;
+  game.player.x = meeting.returnX;
+  game.player.y = meeting.returnY;
+  game.player.rooftopHeight = 0;
+  game.rooftop = null;
+  game.notify('BACK TO THE STREETS', 'The next move is yours.');
 }
 
 function passMission(game) {
