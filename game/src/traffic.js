@@ -64,7 +64,8 @@ export function updateTraffic(game, dt) {
     const key = `${ix},${iy}`;
     if (ahead < 12 && ai.junction !== key) {
       ai.junction = key;
-      if (game.random() < 0.3) ai.direction = (ai.direction + (game.random() > 0.5 ? 1 : 3)) % 4;
+      if (v.convoyLeader?.ai) ai.direction = v.convoyLeader.ai.direction;
+      else if (game.random() < 0.3) ai.direction = (ai.direction + (game.random() > 0.5 ? 1 : 3)) % 4;
     }
     const desired = ai.direction * Math.PI / 2;
     const steer = clamp(angleDelta(v.angle, desired) * 2.2, -1, 1);

@@ -23,6 +23,7 @@ import { drawDiscoveries, drawDistrictBanner } from './discoveries.js';
 import { drawAmbientOpportunity, drawNewsTicker } from './ambient.js';
 import { drawStuntRamps, drawStuntResult } from './stunts.js';
 import { drawMarine } from './marine.js';
+import { polygon } from './math.js';
 
 export function createRenderer(canvas) {
   const ctx = canvas.getContext('2d', { alpha: false });
@@ -99,6 +100,7 @@ export function createRenderer(canvas) {
     drawAmbientOpportunity(ctx, game);
     drawSideJobs(ctx, game);
     drawMissionMarker(ctx, game);
+    drawPlayerIndicator(ctx, game);
     drawStreetLights(ctx, game, bounds);
     for (const vehicle of game.vehicles) {
       if (visible(vehicle, bounds, 160)) drawVehicleLights(ctx, vehicle, game);
@@ -156,6 +158,22 @@ function drawSkids(ctx, game) {
     }
     ctx.stroke();
   }
+  ctx.restore();
+}
+
+function drawPlayerIndicator(ctx, game) {
+  if (game.dialog || game.menu.death) return;
+  const p = game.player;
+  const elevation = p.rooftopHeight || 0;
+  const x = p.x - elevation * 0.28;
+  const y = p.y - elevation * 0.62;
+  const vehicle = p.vehicle;
+  const offset = vehicle ? vehicle.spec.boat ? 48 : 34 : 24;
+  const float = Math.sin(game.clock.elapsed * 2) * 1.5;
+  ctx.save();
+  ctx.shadowColor = '#071724';
+  ctx.shadowBlur = 4;
+  polygon(ctx, [[x - 5, y - offset - 7 + float], [x + 5, y - offset - 7 + float], [x, y - offset + float]], '#f8e2a4');
   ctx.restore();
 }
 

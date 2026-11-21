@@ -283,9 +283,15 @@ function prepareObjective(game) {
       game.vehicles.push(s.target);
     }
     if (objective.type === 'convoy') {
+      s.target.ai = { direction: 1, cruise: 60, wait: 0, junction: '' };
+      s.target.parked = false;
       s.escorts = [-65, 65].map(offset => {
-        const v = createVehicle('interceptor', objective.x + offset, objective.y, Math.PI / 2);
+        const v = createVehicle('sunburst', objective.x + offset, objective.y + 20, Math.PI / 2, '#354956');
         v.missionTag = 'escort';
+        v.health = 140;
+        v.ai = { direction: 1, cruise: 61, wait: 0, junction: '' };
+        v.convoyLeader = s.target;
+        v.parked = false;
         game.vehicles.push(v);
         return v;
       });

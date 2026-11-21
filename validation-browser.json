@@ -1,0 +1,17 @@
+{
+  "titleAndControls": true,
+  "vehicleEnterAndKeyboardDriving": true,
+  "pauseSaveResume": true,
+  "cityAtlas": true,
+  "storyDialog": true,
+  "radioAndSynthAudio": {
+    "initialized": true,
+    "state": "running",
+    "station": "COSTA NEWS",
+    "muted": false,
+    "volume": 0.65
+  },
+  "allRequestsLocal": true,
+  "requests": 42,
+  "exceptions": []
+}

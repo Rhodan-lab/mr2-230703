@@ -1,5 +1,5 @@
 import { COAST, BLOCK } from './config.js';
-import { createVehicle } from './vehicles.js';
+import { createVehicle, explodeVehicle } from './vehicles.js';
 import { spawnCruiser } from './police.js';
 
 export const SHOT_SCENARIOS = {
@@ -83,7 +83,7 @@ function stageChase(game) {
   game.shotZoom = 1.2;
   game.camera.rotation = -0.15;
   game.vehicles = game.vehicles.filter(v => Math.hypot(v.x - 1740, v.y - 1400) > 600);
-  const v = seatPlayer(game, 'vectora', 1695, 1420, Math.PI / 2 + 0.03, '#efb956');
+  const v = seatPlayer(game, 'vectora', 1695, 1420, Math.PI / 2 + 0.03, '#ef806a');
   v.vx = 247;
   v.speed = 247;
   game.heat = 5;
@@ -99,6 +99,9 @@ function stageChase(game) {
   ]) spawnCruiser(game, x, y, angle);
   ambientCar(game, 'taxi', 2010, 1378, -Math.PI / 2, 72);
   ambientCar(game, 'parcelvan', 2250, 1420, Math.PI / 2, 68);
+  const wreck = createVehicle('tico', 1610, 1433, 1.9, '#5f7b85');
+  game.vehicles.push(wreck);
+  explodeVehicle(game, wreck);
   game.helicopter.active = true;
   game.helicopter.x = 1750;
   game.helicopter.y = 1315;
@@ -145,9 +148,9 @@ function stageGolden(game) {
 function stageCity(game) {
   game.clock.hour = 12.4;
   game.weather.type = 'CLEAR';
-  game.shotZoom = 1.12;
+  game.shotZoom = 1.28;
   game.camera.rotation = -0.13;
-  game.player.x = 1714;
+  game.player.x = 1680;
   game.player.y = 1198;
   game.player.weapon = 0;
   game.player.angle = -0.2;

@@ -1,0 +1,73 @@
+{
+  "tests": [
+    {
+      "name": "Every source module imports independently",
+      "passed": true
+    },
+    {
+      "name": "Seeded city is reproducible, collision-safe and contains 400+ buildings",
+      "passed": true
+    },
+    {
+      "name": "All nine vehicle types accelerate with finite, bounded physics",
+      "passed": true
+    },
+    {
+      "name": "Player can enter, drive and exit a nearby vehicle",
+      "passed": true
+    },
+    {
+      "name": "NPC damage does not implicate the player",
+      "passed": true
+    },
+    {
+      "name": "Fourteen story missions progress through every objective to completion",
+      "passed": true
+    },
+    {
+      "name": "Timed failure retains a retry path",
+      "passed": true
+    },
+    {
+      "name": "Deliveries reject a substituted vehicle",
+      "passed": true
+    },
+    {
+      "name": "Property ownership, hourly income, garage and saves persist",
+      "passed": true
+    },
+    {
+      "name": "Taxi shift requires a cab and pays five fares",
+      "passed": true
+    },
+    {
+      "name": "Repair, medical care, resupply and concealed respray work",
+      "passed": true
+    },
+    {
+      "name": "Police helicopter activates, tracks and deploys real officers",
+      "passed": true
+    },
+    {
+      "name": "WASTED and BUSTED restore health and clear pursuit",
+      "passed": true
+    },
+    {
+      "name": "GPS A-star returns contiguous road intersections",
+      "passed": true
+    },
+    {
+      "name": "Helicopter search can be escaped rather than seeing through buildings",
+      "passed": true
+    },
+    {
+      "name": "Stunt ramps launch a fast vehicle and reward a clean landing",
+      "passed": true
+    },
+    {
+      "name": "Long simulation and each staged scenario remain finite",
+      "passed": true
+    }
+  ],
+  "passed": 17
+}

@@ -1,0 +1,73 @@
+{
+  "errors": [],
+  "report": [
+    {
+      "name": "1-chase.jpg",
+      "bytes": 198810,
+      "scenario": "chase",
+      "buildings": 592,
+      "vehicles": 182,
+      "peds": 318,
+      "finite": true,
+      "position": {
+        "x": 1946.1631579091998,
+        "y": 1425.5121196328191
+      },
+      "speed": 276.8061034561785,
+      "heat": 5,
+      "fps": 0,
+      "steps": 59
+    },
+    {
+      "name": "2-goldenhour.jpg",
+      "bytes": 154508,
+      "scenario": "goldenhour",
+      "buildings": 592,
+      "vehicles": 191,
+      "peds": 355,
+      "finite": true,
+      "position": {
+        "x": 3380,
+        "y": 1456.1985169595528
+      },
+      "speed": 173.1673819725261,
+      "heat": 0,
+      "fps": 57,
+      "steps": 62
+    },
+    {
+      "name": "3-city.jpg",
+      "bytes": 202769,
+      "scenario": "city",
+      "buildings": 592,
+      "vehicles": 204,
+      "peds": 323,
+      "finite": true,
+      "position": {
+        "x": 1680,
+        "y": 1180.7999999999993
+      },
+      "speed": 0,
+      "heat": 0,
+      "fps": 0,
+      "steps": 37
+    },
+    {
+      "name": "4-boat.jpg",
+      "bytes": 121377,
+      "scenario": "boat",
+      "buildings": 592,
+      "vehicles": 188,
+      "peds": 318,
+      "finite": true,
+      "position": {
+        "x": 3898.6891641838874,
+        "y": 3149.902532779772
+      },
+      "speed": 122.26576374609807,
+      "heat": 0,
+      "fps": 0,
+      "steps": 57
+    }
+  ]
+}
