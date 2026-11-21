@@ -1,0 +1,47 @@
+{
+  "gameEntries": 42,
+  "gameBytes": 238014,
+  "sourceModules": 40,
+  "sourceLines": 6604,
+  "indexBytes": 768,
+  "screenshots": [
+    {
+      "name": "1-chase.jpg",
+      "bytes": 198810,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "2-goldenhour.jpg",
+      "bytes": 154508,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "3-city.jpg",
+      "bytes": 202769,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "4-boat.jpg",
+      "bytes": 121377,
+      "width": 1280,
+      "height": 720
+    }
+  ],
+  "dossierBytes": 1072400,
+  "dossierSha256": "3ac1c6c996cd1aa4db1cf7bbd337490f05e28926d30f1021befec30bc075162e",
+  "gateEquivalent": {
+    "game_files": "PASS",
+    "references": "PASS",
+    "screenshots": "PASS",
+    "dossier_matches": "PASS",
+    "js_parses": "PASS"
+  },
+  "deterministicBuild": "PASS — byte comparison of every output file",
+  "gameplayChecks": 17,
+  "browserExceptions": 0,
+  "network": "All 42 observed game requests were local",
+  "officialGrade": "Not run; no makefun CLI invoked"
+}
