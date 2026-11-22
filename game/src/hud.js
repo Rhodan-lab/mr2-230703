@@ -20,6 +20,7 @@ function panel(ctx, x, y, w, h, accent = null) {
 
 export function drawHUD(ctx, game) {
   drawIdentity(ctx, game);
+  drawDistrictBanner(ctx, game);
   drawStatus(ctx, game);
   drawObjective(ctx, game);
   drawMinimap(ctx, game);
@@ -48,7 +49,7 @@ function drawIdentity(ctx, game) {
   label(ctx, 'MARBELLA', 27, 36, 22, '#f4edd7', 'left', 900);
   label(ctx, 'R U N   2', 28, 53, 11, '#88cabe', 'left', 800);
   const district = districtAt(game.player.x, game.player.y);
-  label(ctx, district.name, 27, 83, 11, '#d4dace', 'left', 700);
+  label(ctx, game.shotDistrictBanner?.name || district.name, 27, 83, 11, '#d4dace', 'left', 700);
   label(ctx, `${formatClock(game.clock)}   /   ${game.weather.type}`, 27, 101, 10, '#98b1b9', 'left', 600);
   if (game.weather.type === 'RAIN') {
     ctx.strokeStyle = '#83aebf';
@@ -60,6 +61,41 @@ function drawIdentity(ctx, game) {
       ctx.stroke();
     }
   }
+}
+
+function drawDistrictBanner(ctx, game) {
+  const district = districtAt(game.player.x, game.player.y);
+  if (game.hudDistrictName !== district.name) {
+    game.hudDistrictName = district.name;
+    game.hudDistrictBanner = {
+      name: district.name,
+      subtitle: `${district.short.toUpperCase()} DISTRICT — MARBELLA`,
+      started: game.clock.elapsed,
+    };
+  }
+  const banner = game.shotDistrictBanner || game.hudDistrictBanner;
+  if (!banner) return;
+  const age = Math.max(0, game.clock.elapsed - banner.started);
+  if (age > 9) return;
+  const opacity = Math.min(age * 2, 1, (9 - age) / 1.4);
+  if (opacity <= 0) return;
+  ctx.save();
+  ctx.globalAlpha = opacity;
+  const width = Math.min(930, Math.max(400, banner.name.length * 24, banner.subtitle.length * 10));
+  const x = (1280 - width) / 2;
+  const y = 535;
+  roundRect(ctx, x, y, width, 100, 5, '#081a27b8');
+  ctx.fillStyle = '#edca7a';
+  ctx.fillRect(640 - 26, y + 13, 52, 2);
+  ctx.font = '700 36px Georgia,serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = '#f5ead1';
+  ctx.fillText(banner.name, 640, y + 60, width - 30);
+  ctx.font = '700 15px Arial,sans-serif';
+  ctx.fillStyle = '#afd3ca';
+  ctx.fillText(banner.subtitle, 640, y + 84, width - 30);
+  ctx.restore();
 }
 
 function drawStatus(ctx, game) {
